@@ -48,6 +48,7 @@ namespace libtorrent { namespace {
 		// don't send out peers that we haven't successfully connected to
 		if (p.is_connecting()) return false;
 		if (p.in_handshake()) return false;
+		if (p.type() != connection_type::bittorrent) return false;
 		return true;
 	}
 
@@ -125,10 +126,7 @@ namespace libtorrent { namespace {
 					// don't write too big of a package
 					if (num_added >= max_peer_entries) break;
 
-					// only send proper bittorrent peers
-					if (peer->type() != connection_type::bittorrent)
-						continue;
-
+					TORRENT_ASSERT(peer->type() == connection_type::bittorrent);
 					auto const* const p = static_cast<aux::bt_peer_connection const*>(peer);
 
 					// if the peer has told us which port its listening on,
@@ -434,7 +432,7 @@ namespace libtorrent { namespace {
 		{
 			if (m_torrent.flags() & torrent_flags::disable_pex) return;
 
-			// if there's no change in out peer set, don't send anything
+			// if there's no change in our peer set, don't send anything
 			if (m_tp.peers_in_msg() == 0) return;
 
 			std::vector<char> const& pex_msg = m_tp.get_ut_pex_msg();
@@ -502,10 +500,7 @@ namespace libtorrent { namespace {
 				// don't write too big of a package
 				if (num_added >= max_peer_entries) break;
 
-				// only send proper bittorrent peers
-				if (peer->type() != connection_type::bittorrent)
-					continue;
-
+				TORRENT_ASSERT(peer->type() == connection_type::bittorrent);
 				auto const* const p = static_cast<aux::bt_peer_connection const*>(peer);
 
 				// no supported flags to set yet
